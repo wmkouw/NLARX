@@ -60,10 +60,10 @@ function ruleVariationalNLARXOutNPPPPP(g :: Function,
 
     # Parameters of outgoing message
 	Φ = mW
-    ϕ = mW*(S*mx + s*g(mθ, mx) + s*mη*mu)
+    ϕ = S*mx + s*g(mθ, mx) + s*mη*mu
 
 	# Set outgoing message
-	return Message(Multivariate, GaussianWeightedMeanPrecision, xi=ϕ, w=Φ)
+	return Message(Multivariate, GaussianMeanPrecision, m=ϕ, w=Φ)
 end
 
 function ruleVariationalNLARXIn1PNPPPP(g :: Function,
@@ -98,9 +98,13 @@ function ruleVariationalNLARXIn1PNPPPP(g :: Function,
 	# Map transition noise to matrix
 	mW = wMatrix(mγ, order)
 
-    # Parameters of outgoing message
-    Φ = (S + s*Jx')'*mW*(S + s*Jx')
-    ϕ = (S + s*Jx')'*mW*(my - s*mη*mu)
+    # !OLD DERIVATIONS # Parameters of outgoing message
+    # Φ = (S + s*Jx')'*mW*(S + s*Jx')
+	# ϕ = (S + s*Jx')'*mW*(my - s*mη*mu)
+	
+	# Parameters of outgoing message
+    Φ = S'*mW*S + Jx*s'*mW*s*Jx'
+    ϕ = (S + s*Jx')'*mW*(my - s*mη*mu) - Jx*(g(mθ,approxx) - Jx'*approxx)*mγ
 
 	# Update global approximating point
 	global approxx = inv(Φ + 1e-6*Matrix{Float64}(I, size(Φ)))*ϕ
