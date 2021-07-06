@@ -3,8 +3,7 @@ using LinearAlgebra
 import ForneyLab: SoftFactor, @ensureVariables, generateId, addNode!, associate!,
                   averageEnergy, differentialEntropy, Interface, Variable, slug, ProbabilityDistribution,
 				  unsafeLogMean, unsafeMean, unsafeCov, unsafePrecision, unsafeMeanCov,
-				  collectAverageEnergyInbounds, localPosteriorFactorToRegion,
-				  ultimatePartner, posteriorFactor, assembleClamp!
+                  collectAverageEnergyInbounds, localEdgeToRegion, ultimatePartner, region, Region, isClamped, currentInferenceAlgorithm
 export NLatentAutoregressiveX, NLARX
 
 """
@@ -106,24 +105,25 @@ function collectAverageEnergyInbounds(node::NLatentAutoregressiveX)
 	# Push function to calling signature (g needs to be defined in user scope)
 	push!(inbounds, Dict{Symbol, Any}(:g => node.g, :keyword => false))
 
-    local_posterior_factor_to_region = localPosteriorFactorToRegion(node)
+    local_edge_to_region = localEdgeToRegion(node)
 
-    encountered_posterior_factors = Union{PosteriorFactor, Edge}[] # Keep track of encountered posterior factors
+    encountered_regions = Region[] # Keep track of encountered regions
     for node_interface in node.interfaces
         inbound_interface = ultimatePartner(node_interface)
-        current_posterior_factor = posteriorFactor(node_interface.edge)
+        current_region = region(node_interface.node, node_interface.edge)
 
-        if (inbound_interface != nothing) && isa(inbound_interface.node, Clamp)
+        if isClamped(inbound_interface)
             # Hard-code marginal of constant node in schedule
             push!(inbounds, assembleClamp!(copy(inbound_interface.node), ProbabilityDistribution)) # Copy Clamp before assembly to prevent overwriting dist_or_msg field
-        elseif !(current_posterior_factor in encountered_posterior_factors)
+        elseif !(current_region in encountered_regions)
             # Collect marginal entry from marginal dictionary (if marginal entry is not already accepted)
-            target = local_posterior_factor_to_region[current_posterior_factor]
-            push!(inbounds, currentInferenceAlgorithm().target_to_marginal_entry[target])
+            target = local_edge_to_region[node_interface.edge]
+            current_inference_algorithm = currentInferenceAlgorithm()
+            push!(inbounds, current_inference_algorithm.target_to_marginal_entry[target])
         end
 
-        push!(encountered_posterior_factors, current_posterior_factor)
+        push!(encountered_regions, current_region)
     end
 
     return inbounds
-end
+end 

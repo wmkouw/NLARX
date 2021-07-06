@@ -1,16 +1,19 @@
 # NLARX
 
-Custom ForneyLab.jl factor node for a nonlinear latent autoregressive model with exogenous input.
+![](https://img.shields.io/badge/julia-1.6-9556B2)
+![](https://img.shields.io/badge/ForneyLab-0.11.3-0E1F72)
+
+Custom ForneyLab factor node for a nonlinear latent autoregressive model with exogenous input.
 
 ### Usage
 
-The node can be added to ForneyLab by running 
+The node can be used by first pulling in the repo:
 
 ```julia
 ] dev git@github.com:wmkouw/NLARX.git
 ```
 
-in the REPL and then import
+and then importing:
 
 ```julia 
 using ForneyLab
