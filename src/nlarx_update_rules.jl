@@ -97,10 +97,6 @@ function ruleVariationalNLARXIn1PNPPPP(g :: Function,
 
 	# Map transition noise to matrix
 	mW = wMatrix(mγ, order)
-
-    # !OLD DERIVATIONS # Parameters of outgoing message
-    # Φ = (S + s*Jx')'*mW*(S + s*Jx')
-	# ϕ = (S + s*Jx')'*mW*(my - s*mη*mu)
 	
 	# Parameters of outgoing message
     Φ = S'*mW*S + Jx*s'*mW*s*Jx'
